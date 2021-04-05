@@ -12,7 +12,6 @@
    [clojurescript7.components.circles :refer [circles]]
    [clojurescript7.components.cells :refer [cells]]))
 
-;; -------------------------
 ;; Views
 
 (defn app []
@@ -26,7 +25,6 @@
    [circles]
    [cells]])
 
-;; -------------------------
 ;; Initialize app
 
 (defn mount []
