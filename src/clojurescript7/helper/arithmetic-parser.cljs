@@ -20,4 +20,3 @@
 
 (defn precedence [v]
   (or (:precedence (operators v)) 0))
-
