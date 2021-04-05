@@ -1,0 +1,3 @@
+An implementation of the 7GUIs in ClojureScript and Reagent by Jovan Jester. All components are currently working more or less fully except for the last one, Cells (future Excel killer), which is still in progress.
+
+To view a live demo of this project go to https://clojurescript7.jester.cafe/
