@@ -1,22 +1,5 @@
+### ClojureScript7
+An implementation of the 7GUIs in ClojureScript and Reagent by Jovan Jester. All components are currently working more or less fully except for the last one, Cells (a future Excel killer), which is still in progress.
 
-### Development mode
-To start the Figwheel compiler, navigate to the project folder and run the following command in the terminal:
-
-```
-lein figwheel
-```
-
-Figwheel will automatically push cljs changes to the browser.
-Once Figwheel starts up, you should be able to open the `public/index.html` page in the browser.
-
-### REPL
-
-The project is setup to start nREPL on port `7002` once Figwheel starts.
-Once you connect to the nREPL, run `(cljs)` to switch to the ClojureScript REPL.
-
-### Building for production
-
-```
-lein clean
-lein package
-```
+### Live Demo
+To view a live demo of this project go to https://clojurescript7.jester.cafe/
