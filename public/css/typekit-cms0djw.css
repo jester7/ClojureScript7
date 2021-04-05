@@ -1,0 +1,61 @@
+/*
+ * The Typekit service used to deliver this font or fonts for use on websites
+ * is provided by Adobe and is subject to these Terms of Use
+ * http://www.adobe.com/products/eulas/tou_typekit. For font license
+ * information, see the list below.
+ *
+ * courier-prime:
+ *   - http://typekit.com/eulas/0000000000000000000134f8
+ *   - http://typekit.com/eulas/0000000000000000000134f6
+ * mr-eaves-xl-modern:
+ *   - http://typekit.com/eulas/00000000000000003b9adbcf
+ *   - http://typekit.com/eulas/00000000000000003b9adbd0
+ *   - http://typekit.com/eulas/00000000000000003b9adbd9
+ * mr-eaves-xl-modern-narrow:
+ *   - http://typekit.com/eulas/00000000000000003b9adbe9
+ *
+ * © 2009-2020 Adobe Systems Incorporated. All Rights Reserved.
+ */
+/*{"last_published":"2020-12-12 04:03:28 UTC"}*/
+
+@import url("https://p.typekit.net/p.css?s=1&k=cms0djw&ht=tk&f=18503.18505.28422.28423.28432.28448&a=11509344&app=typekit&e=css");
+
+@font-face {
+font-family:"courier-prime";
+src:url("https://use.typekit.net/af/a0dd9c/0000000000000000000134f8/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff2"),url("https://use.typekit.net/af/a0dd9c/0000000000000000000134f8/27/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff"),url("https://use.typekit.net/af/a0dd9c/0000000000000000000134f8/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("opentype");
+font-display:auto;font-style:normal;font-weight:700;
+}
+
+@font-face {
+font-family:"courier-prime";
+src:url("https://use.typekit.net/af/df3b56/0000000000000000000134f6/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff2"),url("https://use.typekit.net/af/df3b56/0000000000000000000134f6/27/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff"),url("https://use.typekit.net/af/df3b56/0000000000000000000134f6/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("opentype");
+font-display:auto;font-style:normal;font-weight:400;
+}
+
+@font-face {
+font-family:"mr-eaves-xl-modern";
+src:url("https://use.typekit.net/af/4fe0eb/00000000000000003b9adbcf/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n8&v=3") format("woff2"),url("https://use.typekit.net/af/4fe0eb/00000000000000003b9adbcf/27/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n8&v=3") format("woff"),url("https://use.typekit.net/af/4fe0eb/00000000000000003b9adbcf/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n8&v=3") format("opentype");
+font-display:auto;font-style:normal;font-weight:800;
+}
+
+@font-face {
+font-family:"mr-eaves-xl-modern";
+src:url("https://use.typekit.net/af/332c60/00000000000000003b9adbd0/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff2"),url("https://use.typekit.net/af/332c60/00000000000000003b9adbd0/27/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff"),url("https://use.typekit.net/af/332c60/00000000000000003b9adbd0/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("opentype");
+font-display:auto;font-style:normal;font-weight:400;
+}
+
+@font-face {
+font-family:"mr-eaves-xl-modern";
+src:url("https://use.typekit.net/af/ae7feb/00000000000000003b9adbd9/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n9&v=3") format("woff2"),url("https://use.typekit.net/af/ae7feb/00000000000000003b9adbd9/27/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n9&v=3") format("woff"),url("https://use.typekit.net/af/ae7feb/00000000000000003b9adbd9/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n9&v=3") format("opentype");
+font-display:auto;font-style:normal;font-weight:900;
+}
+
+@font-face {
+font-family:"mr-eaves-xl-modern-narrow";
+src:url("https://use.typekit.net/af/350e8c/00000000000000003b9adbe9/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff2"),url("https://use.typekit.net/af/350e8c/00000000000000003b9adbe9/27/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff"),url("https://use.typekit.net/af/350e8c/00000000000000003b9adbe9/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("opentype");
+font-display:auto;font-style:normal;font-weight:700;
+}
+
+.tk-courier-prime { font-family: "courier-prime",monospace; }
+.tk-mr-eaves-xl-modern { font-family: "mr-eaves-xl-modern",sans-serif; }
+.tk-mr-eaves-xl-modern-narrow { font-family: "mr-eaves-xl-modern-narrow",sans-serif; }
