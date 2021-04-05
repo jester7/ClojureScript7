@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-GNU GENERAL PUBLIC LICENSE
-=======
                     GNU GENERAL PUBLIC LICENSE
->>>>>>> 5dc6157ab62787574ecc4610eace24dd26e8c2c6
                        Version 3, 29 June 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -675,8 +671,4 @@ into proprietary programs.  If your program is a subroutine library, you
 may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
-<<<<<<< HEAD
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
-=======
-<https://www.gnu.org/licenses/why-not-lgpl.html>.
->>>>>>> 5dc6157ab62787574ecc4610eace24dd26e8c2c6
