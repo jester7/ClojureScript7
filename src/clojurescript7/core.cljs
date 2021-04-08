@@ -13,7 +13,6 @@
    [clojurescript7.components.cells :refer [cells]]))
 
 ;; Views
-
 (defn app []
   [:div.wrapper
    [header]
@@ -25,10 +24,10 @@
    [circles]
    [cells]])
 
-;; Initialize app
-
 (defn mount []
   (d/render [app] ($ "#app")))
 
+;; Initialize app
 (defn init! []
+  (r/after-render #(helper-dom/draggable ($ "#clippy") ($ "html")))
   (mount))

@@ -47,4 +47,5 @@
                                                       (assoc @cells-map (u/cell-ref row col) c-map))))
                                           (do
                                             (reset! cells-map
-                                                    (assoc @cells-map (u/cell-ref row col) val)))))))}])))]))]])
+                                                    (assoc @cells-map (u/cell-ref row col) val)))))))}])))]))]
+                                                    [:div#clippy]])

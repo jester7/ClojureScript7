@@ -22,6 +22,22 @@ body {
   line-height: 1em;
 }
 
+#app h1.loading {
+  width:90%;
+  padding:5%;
+  text-align:center;
+  text-shadow:2px 2px 6px var(--applet-bg-color);
+}
+
+#app-loading {
+  background-image: url("../app-loading.svg");
+  background-size: contain;
+  position:relative;
+  height:256px;
+  width:256px;
+  margin:100px auto;
+}
+
 h1, h2, h3, h4 {
   font-family: mr-eaves-xl-modern-narrow, sans-serif;
   font-weight: 700;
@@ -724,4 +740,24 @@ circle:hover {
   top:0px;
   font-size: 2em;
   padding:.5em;
+}
+
+#clippy {
+  background-image: url("https://jester.cafe/wp-content/uploads/2021/04/clippy-head-scratch.gif");
+  width:100px;
+  height:94px;
+  position:relative;
+  z-index: 100;
+  cursor:grab;
+  background-size: contain;
+  opacity:0.85;
+  transition: opacity 0.33s ease-in-out;
+}
+
+#clippy:hover {
+  opacity:1;
+}
+
+#clippy:active {
+  cursor:grabbing;
 }
