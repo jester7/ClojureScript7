@@ -22,22 +22,6 @@ body {
   line-height: 1em;
 }
 
-#app h1.loading {
-  width:90%;
-  padding:5%;
-  text-align:center;
-  text-shadow:2px 2px 6px var(--applet-bg-color);
-}
-
-#app-loading {
-  background-image: url("../app-loading.svg");
-  background-size: contain;
-  position:relative;
-  height:256px;
-  width:256px;
-  margin:100px auto;
-}
-
 h1, h2, h3, h4 {
   font-family: mr-eaves-xl-modern-narrow, sans-serif;
   font-weight: 700;
@@ -750,7 +734,7 @@ circle:hover {
   z-index: 100;
   cursor:grab;
   background-size: contain;
-  opacity:0.85;
+  opacity:0.95;
   transition: opacity 0.33s ease-in-out;
 }
 
@@ -758,6 +742,74 @@ circle:hover {
   opacity:1;
 }
 
+#clippy:hover::after {
+  content: "Cells is not finished yet but it will be soon 😊. For now you can only drag me around. In a future version I might achieve sentience 😏.";
+  position: absolute;
+  display: block;
+  border:1px solid black;
+  background-color:#ffffcc;
+  color:black;
+  padding:1em;
+  border-radius:6px;
+  width:15em;
+  top:-170px;
+  left:-6em;
+  box-shadow: 4px 4px 20px rgba(10,10,10,0.9);
+  text-align: center;
+}
+
 #clippy:active {
   cursor:grabbing;
+}
+
+
+@media (min-width: 1px) and (max-width: 1024px) {
+  
+
+  .applet {
+    margin:0.5rem 0rem 3rem 1rem;
+  
+    height: 90%;
+    width:85%;
+  }
+
+header.applet {
+  position:relative;
+  float:left;
+  margin:0.5em 0.5em 1.5em 0.5em;
+  height: auto;
+  width:auto;
+  max-width: 14em;
+}
+
+header.applet #site-subheading {
+  max-width:100%;
+}
+
+.applet-menu {
+  position:absolute;
+  width:200%;
+   text-align: center;
+   top:0px;
+   left:45%;
+   font-size: 0.8em;
+   
+ }
+ 
+ .menu-item {
+   position: relative;
+   float:left;
+   display: block;
+   clear:none;
+   font-size: 2em;
+   height:2em;
+   width:2em;
+   margin:1em 0.2em 0.5em 0.2em;
+   background-color: var(--applet-bg-color);
+   border-radius:5em;
+   box-shadow: 4px 4px 20px rgba(10,10,10,0.9), 0px 0px 20px rgba(255,255,255,0);
+   cursor:pointer;
+   transition: box-shadow 0.1s ease-in-out;
+ }
+  
 }
