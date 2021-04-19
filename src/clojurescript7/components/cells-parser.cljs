@@ -5,17 +5,6 @@
    [clojurescript7.components.cells.utility :as util :refer
     [cells-map cell-data-for]]))
 
-;; (defn parse-formula [cell-ref val]
-;;   (let [ref-to (subs val 1)
-;;         cursor (r/cursor cells-map [ref-to])]
-;;     (r/track #((reset! cells-map (assoc-in @cells-map [cell-ref :value] @cursor))
-;;                 (set! (.-value ($ cell-ref)) @cursor)))))
-
-;; (defn parse-formula [val]
-;;   (let [cell-ref (subs val 1)]
-;;     (get @cells-map cell-ref)))
-
-
 ;; -------------- refactored, moved code below from clojurescript7.helper.arithmetic-parser to this namespace
 
 ;; TODO handle RANGES of cells (example A1:A10 or B2:C5) by expanding them into individual tokens
@@ -118,9 +107,6 @@
 
 (defn eval-cell-ref [cell-ref]
   (if (cell-ref? cell-ref) (eval-number (cell-data-for cell-ref)) nil))
-;(if (cell-ref? cell-ref) 3 nil))
-;  (if (cell-ref? cell-ref) (eval-number (cells/cell-data-for cell-ref)) nil))
-
 
 ;;; Takes a token in string format and returns the corresponding function (if an operator)
 ;;; or the numeric value.
@@ -194,3 +180,9 @@
 
 (defn parse-formula [formula-str]
   (infix-expression-eval formula-str))
+
+;; (defn parse-formula [cell-ref val]
+;;   (let [ref-to (subs val 1)
+;;         cursor (r/cursor cells-map [ref-to])]
+;;     (r/track #((reset! cells-map (assoc-in @cells-map [cell-ref :value] @cursor))
+;;                 (set! (.-value ($ cell-ref)) @cursor)))))
