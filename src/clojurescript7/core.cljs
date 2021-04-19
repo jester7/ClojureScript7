@@ -22,7 +22,8 @@
    [timer]
    [CRUD]
    [circles]
-   [cells]])
+   [cells]
+   [:div#clippy]])
 
 (defn mount []
   (d/render [app] ($ "#app")))
