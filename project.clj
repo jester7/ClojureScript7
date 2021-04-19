@@ -42,7 +42,7 @@
                         :compiler
                         {:output-to "public/js/app.js"
                          :output-dir "target/release"
-                         :optimizations :advanced
+                         :optimizations :simple
                          :infer-externs true
                          :pretty-print false}}}}
 
