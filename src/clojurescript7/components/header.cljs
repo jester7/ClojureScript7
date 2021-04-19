@@ -2,7 +2,7 @@
 
 (defn header []
   [:header.applet
-   [:h2 {:class "title" :id "site-title"} "ClojureScript7"]
+   [:h2 {:class "title" :id "site-title"} "ClojureScript" [:span.number "7"]]
    [:span {:class "subheading fixed-width-font bold" :id "site-subheading"} "An implementation of the 7GUIs in ClojureScript & Reagent"]
    [:ul.applet-menu
     [:li.menu-item [:a {:href "#counter"} "🧮"]]

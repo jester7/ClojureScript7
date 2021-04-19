@@ -8,7 +8,7 @@ body {
   width:100%;
 
   background: rgb(72,178,162);
-  background: linear-gradient(180deg, rgba(72,178,162,1) 0%, rgba(96,142,196,1) 50%, rgba(9,9,121,1) 100%);
+  background: linear-gradient(180deg, var(--gradient-color-1) 0%, var(--gradient-color-2) 50%, var(--gradient-color-3) 100%);
   background-attachment: fixed;
 
   -webkit-font-smoothing: antialiased;
@@ -167,6 +167,10 @@ header.applet {
   margin-bottom:0.1em;
   float:left;
   border-bottom: 1px solid #a0a0a0;
+}
+
+#site-title span.number {
+  color: var(--light-green);
 }
 
 #site-subheading {
@@ -379,7 +383,7 @@ input:not([type="range"]).invalid {
   width:0%;
   
   background:#48B2A2;
-  background-image: linear-gradient(0deg, #0f4e30 0%, #48B2A2 100%);
+  background-image: linear-gradient(0deg,  var(--button-bg-color) 0%, var(--gradient-color-2) 100%);
   transition:width 0.1s linear;
 }
 

@@ -1,9 +1,11 @@
 :root {
-  --gradient-color-1: rgba(72,178,162,1);
-  --gradient-color-2: rgba(96,142,196,1);
-  --gradient-color-3: rgba(9,9,121,1);
+  --gradient-color-1: rgb(72, 178, 146);
+  --gradient-color-2: rgb(96,142,196);
+  --gradient-color-3: rgb(16,9,121);
 
-  --applet-bg-color: #313241;
+  --light-green:#28a292;
+
+  --applet-bg-color: #323141;
     --highlight:#a0a0a0;
     --button-bg-color: #6645d6;
     --button-bg-active: #6040d1;
