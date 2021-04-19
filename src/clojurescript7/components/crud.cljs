@@ -77,7 +77,7 @@
     [:button#update-button.disabled
      {:type "button"
       :on-click (fn []
-                  (reset! all-the-names (assoc @all-the-names @selection {:key @selection :fname @fname :surname @surname})))}
+                  (reset! all-the-names (assoc @all-the-names @selection {:key @selection :fname @fname :surname @surname :photo @photo})))}
      "Update"]
     [:button#delete-button.disabled
      {:type "button"
