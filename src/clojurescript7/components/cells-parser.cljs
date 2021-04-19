@@ -1,7 +1,22 @@
-(ns clojurescript7.helper.arithmetic-parser
+(ns clojurescript7.components.cells.parser
   (:require
-   [clojure.string :as s]))
-   ;[clojurescript7.components.cells.utility :as cells]
+   [reagent.core :as r]
+   [clojure.string :as s]
+   [clojurescript7.components.cells.utility :as util :refer
+    [cells-map cell-data-for]]))
+
+;; (defn parse-formula [cell-ref val]
+;;   (let [ref-to (subs val 1)
+;;         cursor (r/cursor cells-map [ref-to])]
+;;     (r/track #((reset! cells-map (assoc-in @cells-map [cell-ref :value] @cursor))
+;;                 (set! (.-value ($ cell-ref)) @cursor)))))
+
+;; (defn parse-formula [val]
+;;   (let [cell-ref (subs val 1)]
+;;     (get @cells-map cell-ref)))
+
+
+;; -------------- refactored, moved code below from clojurescript7.helper.arithmetic-parser to this namespace
 
 ;; TODO handle RANGES of cells (example A1:A10 or B2:C5) by expanding them into individual tokens
 ;; -- first pass, tokenize ranges by expanding to individual cell refs 
@@ -102,7 +117,8 @@
     (if (re-seq #"\." val) (js/parseFloat val) (js/parseInt val))))
 
 (defn eval-cell-ref [cell-ref]
-  (if (cell-ref? cell-ref) 3 nil))
+  (if (cell-ref? cell-ref) (eval-number (cell-data-for cell-ref)) nil))
+;(if (cell-ref? cell-ref) 3 nil))
 ;  (if (cell-ref? cell-ref) (eval-number (cells/cell-data-for cell-ref)) nil))
 
 
@@ -174,3 +190,7 @@
     (pop-stack-while! #(seq @op-stack) op-stack out-stack)
     ;; Assuming the expression was a valid one, the last item is the final result.
     (peek @out-stack)))
+
+
+(defn parse-formula [formula-str]
+  (infix-expression-eval formula-str))

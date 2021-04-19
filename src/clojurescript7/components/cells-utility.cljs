@@ -1,7 +1,6 @@
 (ns clojurescript7.components.cells.utility
   (:require
    [reagent.core :as r]
-   [clojurescript7.helper.arithmetic-parser :as p]
    [clojurescript7.helper.dom :as dom :refer [$]]))
 
 (def ^:const cells-parent-id "spreadsheet")
@@ -12,6 +11,9 @@
 (def current-selection (r/atom ""))
 (def current-formula (r/atom ""))
 
+(defn is-formula? [str]
+  (= (get str 0) "="))
+
 (defn cell-ref
   ([cell] (cell-ref (:row cell) (:col cell))) ; if single arg, assumes map with :row and :col
   ([row col]
@@ -19,6 +21,13 @@
 
 (defn el-by-cell-ref [cell-ref]
   ($ (str "#" cell-ref)))
+
+
+(defn has-formula? [cell-ref]
+  (let [data (@cells-map cell-ref)
+        val (-> (el-by-cell-ref cell-ref) .-value)]
+    (or (not (nil? (:formula data)))
+        (is-formula? val))))
 
 (defn scroll-to-cell ; TODO needs work, check offsets of all parent els, scrolling not quite right
   ([cell-ref] (scroll-to-cell cell-ref false true)) ; default just scroll, no range check, smooth yes
@@ -55,33 +64,12 @@
 (defn cell-ref-for-input [input-el]
   (cell-ref (js/parseInt (-> input-el .-dataset .-row)) (js/parseInt (-> input-el .-dataset .-col))))
 
-(defn is-formula? [str]
-  (= (get str 0) "="))
 
-(defn has-formula? [cell-ref]
-  (let [data (@cells-map cell-ref)
-        val (-> (el-by-cell-ref cell-ref) .-value)]
-    (or (not (nil? (:formula data)))
-        (is-formula? val))))
+(defn cell-data-for
+  ([cell-ref] (@cells-map cell-ref))
+  ([row col] (@cells-map (cell-ref row col))))
 
 
-
-;; (defn parse-formula [cell-ref val]
-;;   (let [ref-to (subs val 1)
-;;         cursor (r/cursor cells-map [ref-to])]
-;;     (r/track #((reset! cells-map (assoc-in @cells-map [cell-ref :value] @cursor))
-;;                 (set! (.-value ($ cell-ref)) @cursor)))))
-
-
-
-(defn parse-formula [val]
-  (let [cell-ref (subs val 1)]
-    (get @cells-map cell-ref)))
-
-
-
-(defn cell-data-for [row col]
-  (@cells-map (cell-ref row col)))
 
 (defn update-selection!
   ([el] (update-selection! el false))
