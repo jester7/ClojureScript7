@@ -14,7 +14,8 @@
    [:div#cells-toolbar.row.wrapper
     [:span.toolbar-label "f(x)"]
     [:input#formula-input {:value @current-formula
-                           :on-change #()}]]
+                           :on-change #()}]
+    [:div#cells-info.info "Work in progress; only simple cell references work in formulas and they don't auto-update."]]
    [:div#spreadsheet.wrapper (util/keyboard-navigation)
     (doall (for [row (range 0 max-rows)]
              [:div.row.wrapper {:key (str "row" row)}
