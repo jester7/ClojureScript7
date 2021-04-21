@@ -57,6 +57,10 @@
   {:row (js/parseInt (-> el .-dataset .-row))
    :col (js/parseInt (-> el .-dataset .-col))})
 
+(defn row-col-for-cell-ref [cell-ref]
+  (let [matches (re-matches #"^([A-Z]{1,2})([1-9]{0,4})" cell-ref)]
+    {:row (js/parseInt (matches 2)) :col (matches 1)}))
+
 (defn col-labels [] ; TODO / not being used yet, move col labels out of main spreadsheet div and sync scrolling 
   (for [col (range 1 max-cols)]
     [:span.col-label {:key (str "col-label-" (char (+ col 64)))} (char (+ col 64))]))
@@ -64,12 +68,9 @@
 (defn cell-ref-for-input [input-el]
   (cell-ref (js/parseInt (-> input-el .-dataset .-row)) (js/parseInt (-> input-el .-dataset .-col))))
 
-
 (defn cell-data-for
   ([cell-ref] (@cells-map cell-ref))
   ([row col] (@cells-map (cell-ref row col))))
-
-
 
 (defn update-selection!
   ([el] (update-selection! el false))

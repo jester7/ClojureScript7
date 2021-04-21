@@ -1,9 +1,10 @@
 (ns clojurescript7.components.cells.parser
   (:require
+   [clojurescript7.helper.math :as m]
    [reagent.core :as r]
    [clojure.string :as s]
    [clojurescript7.components.cells.utility :as util :refer
-    [cells-map cell-data-for]]))
+    [cells-map cell-data-for row-col-for-cell-ref]]))
 
 ;; -------------- refactored, moved code below from clojurescript7.helper.arithmetic-parser to this namespace
 
@@ -13,7 +14,7 @@
 ;; -- finally: eval cell references by looking up value
 ;; TODO handle vararg functions, so that above is possible
 
-(def  tokenize-re #"[[0-9]?\.?[0-9]+]*|[\/*\-+^\(\)]|[[A-Z]{1,2}[1-9]{1,4}]*")
+(def  tokenize-re #"[[A-Z]{1,2}[1-9]{0,4}[\:][A-Z]{1,2}[1-9]{0,4}]*|[[0-9]?\.?[0-9]+]*|[\/*\-+^\(\)]|[[A-Z]{1,2}[1-9]{1,4}]*")
 
 ; dead end: was going to try handling unary minus with a regex
 ; but there is some kind of regex bug
@@ -39,20 +40,39 @@
                         "+" {:fn + :precedence 1}
                         "-" {:fn - :precedence 1}}) ; TODO handle functions (sum, average, etc)
 
-(defn is-operator? [token-str]
+(defn operator? [token-str]
   (not (nil? (operators token-str))))
 
-(defn is-operand? [token-str]
+(defn operand? [token-str]
   (and (not= left-p token-str) (and (not= right-p token-str) (nil? (operators token-str)))))
+
+(defn cell-range? [token]
+  (if (string? token)
+    (not (nil? (re-seq #"^[A-Z]{1,2}[1-9]{0,4}[\:][A-Z]{1,2}[1-9]{0,4}$" token)))
+    false))
+
+(defn expand-cell-range [range-str]
+  (cond
+    (cell-range? range-str)
+    (let [matches (re-matches #"^([A-Z]{1,2}[1-9]{0,4})[\:]([A-Z]{1,2}[1-9]{0,4})$" range-str)
+          start-cell (matches 1) end-cell (matches 2)
+          start (row-col-for-cell-ref start-cell)
+          end (row-col-for-cell-ref end-cell)]
+      ;(prn start end)
+      (first (for [col (range (.charCodeAt (:col start)) (inc (.charCodeAt (:col end))))]
+        (for [row (range (:row start) (inc (:row end)))]
+          (str (char col) row)))))
+    :else
+    nil))
 
 (defn strip-whitespace [input-str] ; discards whitespace, used before tokenizing
   (s/replace input-str #"\s" ""))
 
 ;;; Turns an algebraic expression string into a sequence of strings with individual tokens 
 (defn tokenize-as-str [expression-str]
-  (re-seq tokenize-re (strip-whitespace expression-str)))
+  (re-seq tokenize-re (s/upper-case (strip-whitespace expression-str))))
 
-(defn sublist [l start end]
+(defn sublist [l start end] ; orphaned function, no longer used: TODO move out of here or delete
   (drop start (drop-last (- (dec (count l)) end) l)))
 
 ;;; Scans tokens for minus signs and determines if the minus sign should
@@ -71,7 +91,7 @@
             (if (= minus token)
               (cond
                 (nil? prev-token) true ; if minus is at beginning, is unary minus
-                (is-operator? prev-token) true ; if previous token is an operator, assume unary -
+                (operator? prev-token) true ; if previous token is an operator, assume unary -
                 (= left-p prev-token) true ; if prev token is left (, must be unary -
                 :else false) ; if current token is minus but none of above conditions match, it can't be a unary operator
               false)] ; if it isn't a minus sign, don't replace
@@ -88,7 +108,6 @@
   (or (:precedence (operators v)) 0))
 
 (defn cell-ref? [val]
-  (js/console.log "cell-ref? called with " (str val))
   (cond
     (= "" val) false
     (number? val) false
@@ -105,14 +124,31 @@
     :else
     (if (re-seq #"\." val) (js/parseFloat val) (js/parseInt val))))
 
-(defn eval-cell-ref [cell-ref]
-  (if (cell-ref? cell-ref) (eval-number (cell-data-for cell-ref)) nil))
+(defn eval-cell-ref 
+  ([cell-ref] (eval-cell-ref cell-ref true))
+  ([cell-ref when-not-cell-ref-return-nil?]
+  (if (cell-ref? cell-ref)
+    (let [cell-data (cell-data-for cell-ref)]
+      (if (m/numeric? cell-data) (eval-number (cell-data-for cell-ref)) cell-data))
+    (if when-not-cell-ref-return-nil? nil cell-ref))))
 
 ;;; Takes a token in string format and returns the corresponding function (if an operator)
-;;; or the numeric value.
-(defn eval-token [token] ; takes single token in string, returns corresponding function or numeric value if operand
-  (or (:fn (operators token)) (eval-cell-ref token) (eval-number token)))
+;;; or the text in the cell (nil if empty) or the numeric value.
+(defn eval-token [token]
+  (cond
+    ; If it's an operator, return the function
+    (:fn (operators token)) ; (operators token) returns nil if not found
+    (:fn (operators token))
+    
+    ; If cell ref, evaluate and return 
+    (cell-ref? token)
+    (eval-cell-ref token)
 
+    ; must be a number then
+    :else
+    (eval-number token)))
+
+;;; Needed to handle parentheses swapping for expression reversal
 (defn swap-parentheses [expression] ; turns "(" into ")" and vice versa
   (let [new-expression (atom [])]
     (dotimes [i (count expression)]
@@ -132,8 +168,8 @@
             (conj
              (pop (pop @out-stack))
              ((eval-token (peek @op-stack))
-              (eval-token (first @out-stack))
-              (eval-token (nth @out-stack 1)))))
+              (or (eval-token  (first @out-stack)) 0) ; or is used to treat empty cells as 0
+              (or (eval-token (nth @out-stack 1)) 0))))
     (swap! op-stack pop)))
 
 ;;; Parses any infix algebraic expression string into individual tokens and
@@ -147,7 +183,7 @@
       (let [token (nth reversed-expr i)]
         (cond
           ; if operand, adds it to the operand stack
-          (is-operand? token) (swap! out-stack conj token)
+          (operand? token) (swap! out-stack conj token)
 
           ; left parenthesis 
           (= left-p token) (swap! op-stack conj token)
@@ -160,11 +196,11 @@
             (swap! op-stack pop))
 
           ; if token is an operator and is the first one found in this expression
-          (and (is-operator? token) (empty? @op-stack))
+          (and (operator? token) (empty? @op-stack))
           (swap! op-stack conj token)
 
           ; handles all other operators when not the first one
-          (is-operator? token)
+          (operator? token)
           (do
             (pop-stack-while!
              #(or (< (precedence token) (precedence (peek @op-stack)))
@@ -175,7 +211,7 @@
     ;; Once all tokens have been processed, pop and eval the stacks while op stack is not empty.
     (pop-stack-while! #(seq @op-stack) op-stack out-stack)
     ;; Assuming the expression was a valid one, the last item is the final result.
-    (peek @out-stack)))
+    (eval-cell-ref (peek @out-stack) false))) ; handle edge case where formula is a single cell reference
 
 
 (defn parse-formula [formula-str]
