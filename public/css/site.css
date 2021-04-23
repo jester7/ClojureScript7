@@ -278,6 +278,17 @@ input:focus + span {
   font-size:4em;
 }
 
+#temperature input {
+  transition: color 0.8s ease-out;
+}
+
+#temperature input.hot {
+  color:red;
+}
+
+#temperature input.cold {
+  color:blue;
+}
 
 #flight .row.wrapper, #timer .row.wrapper {
   width: 100%;

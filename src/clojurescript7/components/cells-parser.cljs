@@ -4,7 +4,7 @@
    [reagent.core :as r]
    [clojure.string :as s]
    [clojurescript7.components.cells.utility :as util :refer
-    [cells-map cell-data-for row-col-for-cell-ref]]))
+    [cells-map watchers cell-value-for row-col-for-cell-ref]]))
 
 ;; -------------- refactored, moved code below from clojurescript7.helper.arithmetic-parser to this namespace
 
@@ -60,8 +60,8 @@
           end (row-col-for-cell-ref end-cell)]
       ;(prn start end)
       (first (for [col (range (.charCodeAt (:col start)) (inc (.charCodeAt (:col end))))]
-        (for [row (range (:row start) (inc (:row end)))]
-          (str (char col) row)))))
+               (for [row (range (:row start) (inc (:row end)))]
+                 (str (char col) row)))))
     :else
     nil))
 
@@ -124,25 +124,31 @@
     :else
     (if (re-seq #"\." val) (js/parseFloat val) (js/parseInt val))))
 
-(defn eval-cell-ref 
+(defn eval-cell-ref
   ([cell-ref] (eval-cell-ref cell-ref true))
   ([cell-ref when-not-cell-ref-return-nil?]
-  (if (cell-ref? cell-ref)
-    (let [cell-data (cell-data-for cell-ref)]
-      (if (m/numeric? cell-data) (eval-number (cell-data-for cell-ref)) cell-data))
-    (if when-not-cell-ref-return-nil? nil cell-ref))))
+   (if (cell-ref? cell-ref)
+     (r/track! #(let [cell-data (cell-value-for cell-ref)]
+                  (if (m/numeric? cell-data) (eval-number cell-data) cell-data)))
+     (if when-not-cell-ref-return-nil? nil cell-ref))))
 
 ;;; Takes a token in string format and returns the corresponding function (if an operator)
 ;;; or the text in the cell (nil if empty) or the numeric value.
-(defn eval-token [token]
+(defn eval-token [token current-cell]
   (cond
     ; If it's an operator, return the function
     (:fn (operators token)) ; (operators token) returns nil if not found
     (:fn (operators token))
-    
+
     ; If cell ref, evaluate and return 
     (cell-ref? token)
-    (eval-cell-ref token)
+    (let ;; watchers work in progress... TODO clicking on a cell makes it lose its reaction atom in :value
+     [cell-ref-val (eval-cell-ref token)] 
+     (add-watch cell-ref-val (keyword (str token "-" current-cell))
+                (fn [key atom previous updated]
+                  (swap! cells-map update-in [current-cell :update-count] inc)))
+      ;(swap! watchers assoc token (conj (@watchers token) current-cell)) 
+      (util/recursive-deref cell-ref-val))
 
     ; must be a number then
     :else
@@ -162,20 +168,20 @@
 
 ;;; Pops the operator stack while the predicate function evaluates to true and
 ;;; pushes the result to the output/operand stack. Used by infix-expression-eval
-(defn pop-stack-while! [predicate op-stack out-stack]
+(defn pop-stack-while! [predicate op-stack out-stack current-cell]
   (while (predicate)
     (reset! out-stack
             (conj
              (pop (pop @out-stack))
-             ((eval-token (peek @op-stack))
-              (or (eval-token  (first @out-stack)) 0) ; or is used to treat empty cells as 0
-              (or (eval-token (nth @out-stack 1)) 0))))
+             ((eval-token (peek @op-stack) current-cell)
+              (or (eval-token  (first @out-stack) current-cell) 0) ; or is used to treat empty cells as 0
+              (or (eval-token (nth @out-stack 1) current-cell) 0))))
     (swap! op-stack pop)))
 
 ;;; Parses any infix algebraic expression string into individual tokens and
 ;;; evaluates the expression.
 ;;; TODO catch exceptions and return error msg or throw exception
-(defn infix-expression-eval [infix-expression] ; converts infix to prefix and evals, returns numeric result
+(defn infix-expression-eval [infix-expression current-cell] ; converts infix to prefix and evals, returns numeric result
   (let [reversed-expr (swap-parentheses (swap-unary-minus (tokenize-as-str infix-expression)))
         op-stack (atom ())
         out-stack (atom ())]
@@ -192,7 +198,7 @@
           (= right-p token)
           (do
             (pop-stack-while!
-             #(not= left-p (peek @op-stack)) op-stack out-stack)
+             #(not= left-p (peek @op-stack)) op-stack out-stack current-cell)
             (swap! op-stack pop))
 
           ; if token is an operator and is the first one found in this expression
@@ -206,19 +212,13 @@
              #(or (< (precedence token) (precedence (peek @op-stack)))
                   (and (<= (precedence token) (precedence (peek @op-stack)))
                        (= exp token)))
-             op-stack out-stack)
+             op-stack out-stack current-cell)
             (swap! op-stack conj token)))))
     ;; Once all tokens have been processed, pop and eval the stacks while op stack is not empty.
-    (pop-stack-while! #(seq @op-stack) op-stack out-stack)
+    (pop-stack-while! #(seq @op-stack) op-stack out-stack current-cell)
     ;; Assuming the expression was a valid one, the last item is the final result.
-    (eval-cell-ref (peek @out-stack) false))) ; handle edge case where formula is a single cell reference
+    (eval-token (peek @out-stack) false))) ; handle edge case where formula is a single cell reference
 
 
-(defn parse-formula [formula-str]
-  (infix-expression-eval formula-str))
-
-;; (defn parse-formula [cell-ref val]
-;;   (let [ref-to (subs val 1)
-;;         cursor (r/cursor cells-map [ref-to])]
-;;     (r/track #((reset! cells-map (assoc-in @cells-map [cell-ref :value] @cursor))
-;;                 (set! (.-value ($ cell-ref)) @cursor)))))
+(defn parse-formula [formula-str current-cell]
+  (r/track! #(infix-expression-eval formula-str current-cell)))

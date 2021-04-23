@@ -1,6 +1,7 @@
 (ns clojurescript7.components.cells.utility
   (:require
    [reagent.core :as r]
+   [reagent.ratom]
    [clojurescript7.helper.dom :as dom :refer [$]]))
 
 (def ^:const cells-parent-id "spreadsheet")
@@ -8,6 +9,7 @@
 (def ^:const max-rows 101)
 
 (def cells-map (r/atom {}))
+(def watchers (r/atom {}))
 (def current-selection (r/atom ""))
 (def current-formula (r/atom ""))
 
@@ -72,7 +74,35 @@
   ([cell-ref] (@cells-map cell-ref))
   ([row col] (@cells-map (cell-ref row col))))
 
-(defn update-selection!
+(defn cell-value-for
+  ([cell-ref] (:value (@cells-map cell-ref)))
+  ([row col] (:value (@cells-map (cell-ref row col)))))
+
+
+;; (defn cell-data-for
+;;   ([cell-ref] (r/cursor cells-map [cell-ref]))
+;;   ([row col] (r/cursor cells-map [(cell-ref row col)])))
+
+;; (defn cell-value-for
+;;   ([cell-ref] (r/cursor cells-map [cell-ref :value]))
+;;   ([row col] (r/cursor cells-map [(cell-ref row col) :value])))
+
+
+(defn derefable? [val]
+  (or (instance? cljs.core/Atom val)
+      (instance? reagent.ratom/RAtom val)
+      (instance? reagent.ratom/RCursor val)
+      (instance? reagent.ratom/Reaction val)))
+
+(defn recursive-deref [atom]
+  (if (derefable? atom)
+    (recursive-deref @atom) ; deref until no longer derefable
+    atom))
+
+(defn deref-or-val [val]
+  (if (derefable? val) @val val))
+
+(defn update-selection! ; TODO this function is derefing the Reaction for formulas
   ([el] (update-selection! el false))
   ([el get-formula?]
    (when (not= @current-selection "") (dom/remove-class ($ (str "#" @current-selection)) "selected"))
