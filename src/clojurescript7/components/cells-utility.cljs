@@ -24,6 +24,16 @@
 (defn el-by-cell-ref [cell-ref]
   ($ (str "#" cell-ref)))
 
+(defn changed! [cell-el]
+  (set! (-> cell-el .-dataset .-changed) true))
+
+(defn not-changed! [cell-el]
+  (set! (-> cell-el .-dataset .-changed) false))
+
+(defn changed? [cell-el]
+  (-> cell-el .-dataset .-changed))
+
+
 
 (defn has-formula? [cell-ref]
   (let [data (@cells-map cell-ref)
@@ -102,7 +112,7 @@
 (defn deref-or-val [val]
   (if (derefable? val) @val val))
 
-(defn update-selection! ; TODO this function is derefing the Reaction for formulas
+(defn update-selection!
   ([el] (update-selection! el false))
   ([el get-formula?]
    (when (not= @current-selection "") (dom/remove-class ($ (str "#" @current-selection)) "selected"))
@@ -112,12 +122,7 @@
    (let [rc (row-col-for-el el)
          data (cell-data-for (:row rc) (:col rc))
          formula (:formula data) ;(or (:formula data) (:value data))
-         value (or (:value data) data)]
-     (js/console.log (cell-ref rc))
-     (js/console.log "data: " data)
-     (js/console.log "formula: " formula)
-     (js/console.log "value: " value)
-     (js/console.log "===========================")
+         value (:value data)]
      (if formula
        (reset! current-formula formula)
        (reset! current-formula value))
