@@ -171,7 +171,7 @@
         (when (not= val "") ; don't update the map if value is empty string
           (let [c-map {:formula (if (is-formula? val) val (:formula (@cells-map cell-r)))  ;(or (:formula (@cells-map cell-ref)) val)
                        :format ""
-                       :value (if (is-formula? val) (parser val cell-r) val)
+                       :value (if (is-formula? val) (parser val) val)
                                                        ;; :update-count (inc (:update-count (@cells-map cell-ref)))
                        }]
             (set! (-> cell-el .-value) (deref-or-val (:value c-map)))

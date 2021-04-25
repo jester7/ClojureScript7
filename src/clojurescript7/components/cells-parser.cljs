@@ -58,7 +58,6 @@
           start-cell (matches 1) end-cell (matches 2)
           start (row-col-for-cell-ref start-cell)
           end (row-col-for-cell-ref end-cell)]
-      ;(prn start end)
       (first (for [col (range (.charCodeAt (:col start)) (inc (.charCodeAt (:col end))))]
                (for [row (range (:row start) (inc (:row end)))]
                  (str (char col) row)))))
@@ -134,7 +133,7 @@
 
 ;;; Takes a token in string format and returns the corresponding function (if an operator)
 ;;; or the text in the cell (nil if empty) or the numeric value.
-(defn eval-token [token current-cell]
+(defn eval-token [token]
   (cond
     ; If it's an operator, return the function
     (:fn (operators token)) ; (operators token) returns nil if not found
@@ -143,15 +142,7 @@
     ; If cell ref, evaluate and return 
     (cell-ref? token)
     (util/recursive-deref (eval-cell-ref token))
-    ;;(let ;; watchers work in progress...
-    ;;[cell-ref-val (eval-cell-ref token)] 
-    ;;  (add-watch cell-ref-val (keyword (str token "-" current-cell))
-    ;;             (fn [key atom previous updated]
-    ;;               (prn (str "watch fn called for cell " token))
-    ;;               (swap! cells-map update-in [current-cell :update-count] inc)))
-      ;(swap! watchers assoc token (conj (@watchers token) current-cell)) 
-      ;;(util/recursive-deref cell-ref-val))
-
+    
     ; must be a number then
     :else
     (eval-number token)))
@@ -170,20 +161,20 @@
 
 ;;; Pops the operator stack while the predicate function evaluates to true and
 ;;; pushes the result to the output/operand stack. Used by infix-expression-eval
-(defn pop-stack-while! [predicate op-stack out-stack current-cell]
+(defn pop-stack-while! [predicate op-stack out-stack]
   (while (predicate)
     (reset! out-stack
             (conj
              (pop (pop @out-stack))
-             ((eval-token (peek @op-stack) current-cell)
-              (or (eval-token  (first @out-stack) current-cell) 0) ; or is used to treat empty cells as 0
-              (or (eval-token (nth @out-stack 1) current-cell) 0))))
+             ((eval-token (peek @op-stack))
+              (or (eval-token  (first @out-stack)) 0) ; or is used to treat empty cells as 0
+              (or (eval-token (nth @out-stack 1)) 0))))
     (swap! op-stack pop)))
 
 ;;; Parses any infix algebraic expression string into individual tokens and
 ;;; evaluates the expression.
 ;;; TODO catch exceptions and return error msg or throw exception
-(defn infix-expression-eval [infix-expression current-cell] ; converts infix to prefix and evals, returns numeric result
+(defn infix-expression-eval [infix-expression] ; converts infix to prefix and evals, returns numeric result
   (let [reversed-expr (swap-parentheses (swap-unary-minus (tokenize-as-str infix-expression)))
         op-stack (atom ())
         out-stack (atom ())]
@@ -200,7 +191,7 @@
           (= right-p token)
           (do
             (pop-stack-while!
-             #(not= left-p (peek @op-stack)) op-stack out-stack current-cell)
+             #(not= left-p (peek @op-stack)) op-stack out-stack)
             (swap! op-stack pop))
 
           ; if token is an operator and is the first one found in this expression
@@ -214,13 +205,13 @@
              #(or (< (precedence token) (precedence (peek @op-stack)))
                   (and (<= (precedence token) (precedence (peek @op-stack)))
                        (= exp token)))
-             op-stack out-stack current-cell)
+             op-stack out-stack)
             (swap! op-stack conj token)))))
     ;; Once all tokens have been processed, pop and eval the stacks while op stack is not empty.
-    (pop-stack-while! #(seq @op-stack) op-stack out-stack current-cell)
+    (pop-stack-while! #(seq @op-stack) op-stack out-stack)
     ;; Assuming the expression was a valid one, the last item is the final result.
-    (eval-token (peek @out-stack) false))) ; handle edge case where formula is a single cell reference
+    (eval-token (peek @out-stack)))) ; handle edge case where formula is a single cell reference
 
 
-(defn parse-formula [formula-str current-cell]
-  (r/track! #(infix-expression-eval formula-str current-cell)))
+(defn parse-formula [formula-str]
+  (r/track! #(infix-expression-eval formula-str)))
