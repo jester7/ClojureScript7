@@ -2,8 +2,6 @@
   (:require
    [reagent.core :as r]
    [reagent.ratom]
-   [clojurescript7.components.cells.parser :refer
-    [parse-formula]]
    [clojurescript7.helper.dom :as dom :refer [$]]))
 
 (def ^:const cells-parent-id "spreadsheet")
