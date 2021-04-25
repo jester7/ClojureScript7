@@ -2,6 +2,8 @@
   (:require
    [reagent.core :as r]
    [reagent.ratom]
+   [clojurescript7.components.cells.parser :refer
+    [parse-formula]]
    [clojurescript7.helper.dom :as dom :refer [$]]))
 
 (def ^:const cells-parent-id "spreadsheet")
@@ -9,7 +11,6 @@
 (def ^:const max-rows 101)
 
 (def cells-map (r/atom {}))
-(def watchers (r/atom {}))
 (def current-selection (r/atom ""))
 (def current-formula (r/atom ""))
 
@@ -161,3 +162,21 @@
                  ;(set! (.-value (.-target e)) (.-key e))
                  ;(.focus curr-cell)
          )))})
+
+(defn handle-cell-blur [cell-el]
+    (when (changed? cell-el)
+      (set! (-> cell-el .-readOnly) true) ; set back to readonly
+      (let [val (-> cell-el .-value)
+            row (js/parseInt (-> cell-el .-dataset .-row))
+            col (js/parseInt (-> cell-el .-dataset .-col))
+            cell-r (cell-ref row col)]
+        (when (not= val "") ; don't update the map if value is empty string
+          (let [c-map {:formula (if (is-formula? val) val (:formula (@cells-map cell-r)))  ;(or (:formula (@cells-map cell-ref)) val)
+                       :format ""
+                       :value (if (is-formula? val) (parse-formula val cell-r) val)
+                                                       ;; :update-count (inc (:update-count (@cells-map cell-ref)))
+                       }]
+            (set! (-> cell-el .-value) (deref-or-val (:value c-map)))
+            (swap! cells-map
+                   assoc (cell-ref row col) c-map))))
+      (not-changed! cell-el)))

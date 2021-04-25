@@ -4,7 +4,7 @@
    [reagent.core :as r]
    [clojure.string :as s]
    [clojurescript7.components.cells.utility :as util :refer
-    [cells-map watchers cell-value-for row-col-for-cell-ref]]))
+    [cells-map cell-value-for row-col-for-cell-ref]]))
 
 ;; -------------- refactored, moved code below from clojurescript7.helper.arithmetic-parser to this namespace
 
@@ -142,13 +142,15 @@
 
     ; If cell ref, evaluate and return 
     (cell-ref? token)
-    (let ;; watchers work in progress... TODO clicking on a cell makes it lose its reaction atom in :value
-     [cell-ref-val (eval-cell-ref token)] 
-     (add-watch cell-ref-val (keyword (str token "-" current-cell))
-                (fn [key atom previous updated]
-                  (swap! cells-map update-in [current-cell :update-count] inc)))
+    (util/recursive-deref (eval-cell-ref token))
+    ;;(let ;; watchers work in progress...
+    ;;[cell-ref-val (eval-cell-ref token)] 
+    ;;  (add-watch cell-ref-val (keyword (str token "-" current-cell))
+    ;;             (fn [key atom previous updated]
+    ;;               (prn (str "watch fn called for cell " token))
+    ;;               (swap! cells-map update-in [current-cell :update-count] inc)))
       ;(swap! watchers assoc token (conj (@watchers token) current-cell)) 
-      (util/recursive-deref cell-ref-val))
+      ;;(util/recursive-deref cell-ref-val))
 
     ; must be a number then
     :else
