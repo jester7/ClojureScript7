@@ -3,6 +3,7 @@ An implementation of the [7GUIs](https://eugenkiss.github.io/7guis/) in ClojureS
 
 ### Live Demo
 [![Netlify Status](https://api.netlify.com/api/v1/badges/41d6a16a-e804-49fc-ba8a-66eb2b2cae98/deploy-status)](https://app.netlify.com/sites/brave-haibt-e8be2e/deploys)
+
 To view a live demo of this project go to https://clojurescript7.jester.cafe/
 
 ### Notes - Work In Progress
@@ -13,6 +14,4 @@ To view a live demo of this project go to https://clojurescript7.jester.cafe/
         - Keyboard navigation and cell selection is a little buggy
         - Expand cell ranges into individual cell references (example ***A1:A4*** expands to ***A1 A2 A3 A4***) so that they can be fed into functions
         - Modify the expression parser so that is supports variadic functions (such as the standard spreadsheet functions like sum, average, etc.)
-        - Purely numeric expressions work but change propagation when formulas use cell references is flaky. Needs a little more work.
-
 
