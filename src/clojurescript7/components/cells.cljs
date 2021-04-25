@@ -39,4 +39,4 @@
                                     (update-selection! (.-target e) true)
                                     (set! (-> e .-target .-readOnly) false))
                                   :on-blur
-                                  #(util/handle-cell-blur (.-target %1))}])))]))]])
+                                  #(util/handle-cell-blur (.-target %1) parser/parse-formula)}])))]))]])
