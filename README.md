@@ -11,7 +11,7 @@ To view a live demo of this project go to https://clojurescript7.jester.cafe/
 - What needs work
     - Mobile: originally I just wanted this to be a Clojure learning exercise so I designed for desktop browsers only, but now I've decided it would be nice to make it look good on mobile as well.
     - For Cells
-        - Keyboard navigation and cell selection is a little buggy
-        - Expand cell ranges into individual cell references (example ***A1:A4*** expands to ***A1 A2 A3 A4***) so that they can be fed into functions
-        - Modify the expression parser so that is supports variadic functions (such as the standard spreadsheet functions like sum, average, etc.)
+        - Keyboard navigation, cell selection, and formula editing is a little buggy
+        - Supports cell ranges like A1:D3 and variadic functions but I've only added SUM, AVG and ROUND
+        - Needs error checking for circular references and malformed expressions
 
