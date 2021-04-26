@@ -14,4 +14,5 @@ To view a live demo of this project go to https://clojurescript7.jester.cafe/
         - Keyboard navigation, cell selection, and formula editing is a little buggy
         - Supports cell ranges like A1:D3 and variadic functions but I've only added SUM, AVG and ROUND
         - Needs error checking for circular references and malformed expressions
+        - This is not part of the 7GUIs challenge but for fun I will add cell formatting support
 
