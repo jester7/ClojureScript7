@@ -6,8 +6,10 @@
 
 (def temp-c (r/atom 0))
 (def temp-f (r/atom 32))
-(set-validator! temp-c math/numeric?) ; set validators to simple numeric test
-(set-validator! temp-f math/numeric?)
+(defn temp-validate [input-str]
+  (or (math/numeric? input-str) (= "-" input-str) (= "" input-str) (= "." input-str) (= "-." input-str)))
+(set-validator! temp-c temp-validate)
+(set-validator! temp-f temp-validate)
 
 ; converts degrees C to deg. F
 (defn c->f [c]
