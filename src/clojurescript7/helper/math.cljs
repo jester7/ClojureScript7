@@ -10,3 +10,6 @@
 ;; test if a value is numeric
 (defn numeric? [x]
   (= (js/parseFloat x) (js/parseFloat x))) ; parseFloat returns NaN, NaN can never be equal to another NaN
+
+(defn average [& nums]
+  (/ (reduce + nums) (count nums)))
