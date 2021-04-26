@@ -150,7 +150,6 @@
 ;;; Takes a token in string format and returns the corresponding function (if an operator)
 ;;; or the text in the cell (nil if empty) or the numeric value.
 (defn eval-token [token]
-  (js/console.log "---->>>TOKEN!!! " (str token))
   (cond
     ; If it's an operator, return the function
     (:fn (operators token)) ; (operators token) returns nil if not found
@@ -190,7 +189,6 @@
           fn? (function? op-or-fn-token)
           arity (if fn? (peek @arity-stack) 2)] ; default assume binary function
       (when fn? (swap! arity-stack pop))
-      (js/console.log "gonna apply fn " op-or-fn-token " with args " (str (take arity @out-stack)))
       (reset! out-stack
               (conj
                (nthrest @out-stack arity) ; pop operands equal to arity of func
@@ -210,7 +208,6 @@
     (dotimes [i (count reversed-expr)]
 
       (let [token (nth reversed-expr i)]
-        (js/console.log "infixeval tok " token)
         (cond
           ; if operand, adds it to the operand stack
           (operand? token)
@@ -258,7 +255,6 @@
     ;; Once all tokens have been processed, pop and eval the stacks while op stack is not empty.
     (pop-stack-while! #(seq @op-stack) op-stack out-stack arity-stack)
     ;; Assuming the expression was a valid one, the last item is the final result.
-    (js/console.log (str @op-stack " // " @out-stack))
     (eval-token (peek @out-stack)))) ; handle edge case where formula is a single cell reference
 
 

@@ -1,6 +1,5 @@
 (ns clojurescript7.components.cells
   (:require
-   [reagent.core :as r]
    [clojurescript7.components.cells.utility :as util :refer
     [max-rows max-cols cells-map current-formula update-selection!]]
    [clojurescript7.components.cells.parser :as parser]
