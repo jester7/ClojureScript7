@@ -4,17 +4,9 @@
    [reagent.core :as r]
    [clojure.string :as s]
    [clojurescript7.components.cells.utility :as util :refer
-    [cells-map cell-value-for row-col-for-cell-ref]]))
+    [cell-value-for row-col-for-cell-ref]]))
 
-;; -------------- refactored, moved code below from clojurescript7.helper.arithmetic-parser to this namespace
-
-;; TODO handle RANGES of cells (example A1:A10 or B2:C5) by expanding them into individual tokens
-;; -- first pass, tokenize ranges by expanding to individual cell refs 
-;; -- then: replace single range token with expanded tokens for each cell in range, A1, A2, A3, etc
-;; -- finally: eval cell references by looking up value
-;; TODO handle vararg functions, so that above is possible
-
-(def  tokenize-re #"[[A-Z]{1,2}[1-9]{0,4}[\:][A-Z]{1,2}[1-9]{0,4}]*|[[0-9]?\.?[0-9]+]*|[\/*\-+^\(\)]|[[A-Z]{1,2}[1-9]{1,4}]*")
+(def  tokenize-re #"\,|ROUND|SUM|AVG|[[A-Z]{1,2}[1-9]{0,4}[\:][A-Z]{1,2}[1-9]{0,4}]*|[[0-9]?\.?[0-9]+]*|[\/*\-+^\(\)]|[[A-Z]{1,2}[1-9]{1,4}]*")
 
 ; dead end: was going to try handling unary minus with a regex
 ; but there is some kind of regex bug
@@ -33,18 +25,37 @@
 (def ^:const right-p ")")
 (def ^:const exp "^")
 (def ^:const minus "-")
+(def ^:const comma ",")
+(def ^:const multi-arity 999)
 
-(def ^:const operators {"^" {:fn Math/pow :precedence 3}
-                        "*" {:fn * :precedence 2}
-                        "/" {:fn / :precedence 2}
-                        "+" {:fn + :precedence 1}
-                        "-" {:fn - :precedence 1}}) ; TODO handle functions (sum, average, etc)
+; not using :arity for now, no error checking:
+; assumes all functions other than operators are multi-arity
+(def ^:const operators {"^" {:fn Math/pow :precedence 3 :arity 2}
+                        "*" {:fn * :precedence 2 :arity 2}
+                        "/" {:fn / :precedence 2 :arity 2}
+                        "+" {:fn + :precedence 1 :arity 2}
+                        "-" {:fn - :precedence 1 :arity 2}})
+
+(def ^:const functions {"SUM" {:fn + :precedence 1 :arity multi-arity}
+                        "AVG" {:fn m/average :precedence 1 :arity multi-arity}
+                        "ROUND" {:fn m/round :precedence 1 :arity 2}})
+
+(defn function? [token-str]
+  (not (nil? (functions token-str))))
+
 
 (defn operator? [token-str]
   (not (nil? (operators token-str))))
 
 (defn operand? [token-str]
-  (and (not= left-p token-str) (and (not= right-p token-str) (nil? (operators token-str)))))
+  (and (not= left-p token-str) (not= comma token-str) (not (function? token-str)) (not= right-p token-str) (nil? (operators token-str))))
+
+
+(defn get-arity [token-str]
+  (cond
+    (function? token-str) (:arity (functions token-str))
+    (operator? token-str) 2
+    :else 0))
 
 (defn cell-range? [token]
   (if (string? token)
@@ -58,9 +69,9 @@
           start-cell (matches 1) end-cell (matches 2)
           start (row-col-for-cell-ref start-cell)
           end (row-col-for-cell-ref end-cell)]
-      (first (for [col (range (.charCodeAt (:col start)) (inc (.charCodeAt (:col end))))]
-               (for [row (range (:row start) (inc (:row end)))]
-                 (str (char col) row)))))
+      (flatten (for [col (range (.charCodeAt (:col start)) (inc (.charCodeAt (:col end))))]
+                 (for [row (range (:row start) (inc (:row end)))]
+                   (str (char col) row)))))
     :else
     nil))
 
@@ -69,7 +80,11 @@
 
 ;;; Turns an algebraic expression string into a sequence of strings with individual tokens 
 (defn tokenize-as-str [expression-str]
-  (re-seq tokenize-re (s/upper-case (strip-whitespace expression-str))))
+  (let [cell-ref-re #"([A-Z]{1,2}[1-9]{0,4})[\:]([A-Z]{1,2}[1-9]{0,4})"
+        expanded-refs (s/replace expression-str
+                                 cell-ref-re
+                                 #(str (s/join "," (expand-cell-range (%1 0)))))]
+    (re-seq tokenize-re (s/upper-case (strip-whitespace expanded-refs)))))
 
 (defn sublist [l start end] ; orphaned function, no longer used: TODO move out of here or delete
   (drop start (drop-last (- (dec (count l)) end) l)))
@@ -110,6 +125,7 @@
   (cond
     (= "" val) false
     (number? val) false
+    (coll? val) false
     :else
     (not (nil? (re-seq #"^[A-Z]{1,2}[0-9]{1,4}$" val)))))
 
@@ -134,15 +150,22 @@
 ;;; Takes a token in string format and returns the corresponding function (if an operator)
 ;;; or the text in the cell (nil if empty) or the numeric value.
 (defn eval-token [token]
+  (js/console.log "---->>>TOKEN!!! " (str token))
   (cond
     ; If it's an operator, return the function
     (:fn (operators token)) ; (operators token) returns nil if not found
     (:fn (operators token))
 
+    (function? token)
+    (:fn (functions token))
+
+    (cell-range? token) ; TODO check if safe to delete; moved cell range expansion to tokenizer
+    (expand-cell-range token)
+
     ; If cell ref, evaluate and return 
     (cell-ref? token)
     (util/recursive-deref (eval-cell-ref token))
-    
+
     ; must be a number then
     :else
     (eval-number token)))
@@ -161,15 +184,20 @@
 
 ;;; Pops the operator stack while the predicate function evaluates to true and
 ;;; pushes the result to the output/operand stack. Used by infix-expression-eval
-(defn pop-stack-while! [predicate op-stack out-stack]
+(defn pop-stack-while! [predicate op-stack out-stack arity-stack]
   (while (predicate)
-    (reset! out-stack
-            (conj
-             (pop (pop @out-stack))
-             ((eval-token (peek @op-stack))
-              (or (eval-token  (first @out-stack)) 0) ; or is used to treat empty cells as 0
-              (or (eval-token (nth @out-stack 1)) 0))))
-    (swap! op-stack pop)))
+    (let [op-or-fn-token (peek @op-stack)
+          fn? (function? op-or-fn-token)
+          arity (if fn? (peek @arity-stack) 2)] ; default assume binary function
+      (when fn? (swap! arity-stack pop))
+      (js/console.log "gonna apply fn " op-or-fn-token " with args " (str (take arity @out-stack)))
+      (reset! out-stack
+              (conj
+               (nthrest @out-stack arity) ; pop operands equal to arity of func
+               (apply (eval-token op-or-fn-token) (map #(or (eval-token %1) 0) (take arity @out-stack)))))
+      (swap! op-stack pop))))
+
+
 
 ;;; Parses any infix algebraic expression string into individual tokens and
 ;;; evaluates the expression.
@@ -177,26 +205,46 @@
 (defn infix-expression-eval [infix-expression] ; converts infix to prefix and evals, returns numeric result
   (let [reversed-expr (swap-parentheses (swap-unary-minus (tokenize-as-str infix-expression)))
         op-stack (atom ())
+        arity-stack (atom ())
         out-stack (atom ())]
     (dotimes [i (count reversed-expr)]
+
       (let [token (nth reversed-expr i)]
+        (js/console.log "infixeval tok " token)
         (cond
           ; if operand, adds it to the operand stack
-          (operand? token) (swap! out-stack conj token)
+          (operand? token)
+          (swap! out-stack conj token)
 
           ; left parenthesis 
-          (= left-p token) (swap! op-stack conj token)
+          (= left-p token)
+          (swap! op-stack conj token)
 
           ; right parenthesis
           (= right-p token)
           (do
             (pop-stack-while!
-             #(not= left-p (peek @op-stack)) op-stack out-stack)
+             #(not= left-p (peek @op-stack)) op-stack out-stack arity-stack)
             (swap! op-stack pop))
+
+          ; comma
+          (= comma token)
+          (reset! arity-stack (conj (rest @arity-stack) (inc (peek @arity-stack))))
+
+
 
           ; if token is an operator and is the first one found in this expression
           (and (operator? token) (empty? @op-stack))
           (swap! op-stack conj token)
+
+          (function? token)
+          (do
+            (reset! arity-stack (conj (rest @arity-stack) (inc (peek @arity-stack))))
+            (swap! op-stack conj token)
+            (pop-stack-while!
+             #(function? (peek @op-stack)) op-stack out-stack arity-stack))
+            ;(swap! op-stack conj token) ;)
+
 
           ; handles all other operators when not the first one
           (operator? token)
@@ -205,11 +253,12 @@
              #(or (< (precedence token) (precedence (peek @op-stack)))
                   (and (<= (precedence token) (precedence (peek @op-stack)))
                        (= exp token)))
-             op-stack out-stack)
+             op-stack out-stack arity-stack)
             (swap! op-stack conj token)))))
     ;; Once all tokens have been processed, pop and eval the stacks while op stack is not empty.
-    (pop-stack-while! #(seq @op-stack) op-stack out-stack)
+    (pop-stack-while! #(seq @op-stack) op-stack out-stack arity-stack)
     ;; Assuming the expression was a valid one, the last item is the final result.
+    (js/console.log (str @op-stack " // " @out-stack))
     (eval-token (peek @out-stack)))) ; handle edge case where formula is a single cell reference
 
 
