@@ -15,7 +15,7 @@
     [:span.toolbar-label "f(x)"]
     [:input#formula-input {:value @current-formula
                            :on-change #()}]
-    [:div#cells-info.info "Work in progress..."]]
+    [:div#cells-info.info "Work in progress but formula parsing working fully: start with '=' to enter a formula. Other than the standard mathematical operators, SUM, AVG, and ROUND are the available functions and can be used with cell ranges like A1:C3"]]
    [:div#spreadsheet.wrapper (util/keyboard-navigation)
     (doall (for [row (range 0 max-rows)]
              [:div.row.wrapper {:key (str "row" row)}
